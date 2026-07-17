@@ -396,7 +396,12 @@ export default function Home() {
       case "predictive":
         return <PredictiveAITab />;
       case "rag":
-        return <RagCommandTab />;
+        return (
+          <RagCommandTab 
+            onAddManualAlert={addManualAlert}
+            cities={cities}
+          />
+        );
       case "portfolio":
         return <PortfolioTab />;
     }
