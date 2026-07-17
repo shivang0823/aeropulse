@@ -35,6 +35,7 @@ interface OverviewTabProps {
   alerts: AlertLog[];
   onAddManualAlert: (cityId: string, message: string, level: "info" | "warning" | "critical") => void;
   onClearAlerts: () => void;
+  isLiveSync: boolean;
 }
 
 type ChartTab = "particulates" | "gases" | "weather";
@@ -80,6 +81,7 @@ export default function OverviewTab({
   alerts,
   onAddManualAlert,
   onClearAlerts,
+  isLiveSync,
 }: OverviewTabProps) {
   const [chartTab, setChartTab] = useState<ChartTab>("particulates");
 
@@ -141,7 +143,17 @@ export default function OverviewTab({
               {/* Quick Status Subtext */}
               <div className="mt-3 flex items-center justify-between w-full text-[10px] text-muted-foreground border-t border-border/50 pt-2 font-mono">
                 <span>PM2.5: {city.pm25}</span>
-                {activeActuatorsCount > 0 ? (
+                {isLiveSync ? (
+                  <span className="text-emerald-500 font-semibold">
+                    Node: {{
+                      lucknow: 2456,
+                      kanpur: 234568,
+                      noida: 6980,
+                      ghaziabad: 5665,
+                      varanasi: 5590
+                    }[city.id] || "Real"}
+                  </span>
+                ) : activeActuatorsCount > 0 ? (
                   <span className="text-blue-500 font-bold flex items-center gap-0.5 animate-pulse">
                     <Zap className="h-3 w-3 fill-blue-500" />
                     {activeActuatorsCount} Active
@@ -513,11 +525,19 @@ export default function OverviewTab({
               </div>
             </div>
 
-            <div className="space-y-3.5">
+            {isLiveSync && (
+              <div className="mb-4 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/10 text-[10px] text-emerald-500 font-mono leading-normal select-none">
+                🟢 Live CPCB mode active. Actuation relays are read-only to prevent unauthorized overrides on real municipal infrastructure.
+              </div>
+            )}
+
+            <div className={`space-y-3.5 ${isLiveSync ? "opacity-60 cursor-not-allowed" : ""}`}>
               {/* Actuator 1: Mist Cannons */}
               <div 
-                onClick={() => onToggleActuator(selectedCity.id, "mistCannons")}
-                className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer select-none transition-all duration-300 ${
+                onClick={() => !isLiveSync && onToggleActuator(selectedCity.id, "mistCannons")}
+                className={`flex items-center justify-between p-3 rounded-lg border select-none transition-all duration-300 ${
+                  isLiveSync ? "pointer-events-none" : "cursor-pointer"
+                } ${
                   selectedCity.actuators.mistCannons
                     ? "border-blue-500/50 bg-blue-500/5 shadow-sm shadow-blue-500/5"
                     : "border-border hover:bg-muted"
@@ -545,8 +565,10 @@ export default function OverviewTab({
 
               {/* Actuator 2: Traffic Redirection */}
               <div 
-                onClick={() => onToggleActuator(selectedCity.id, "trafficRedirect")}
-                className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer select-none transition-all duration-300 ${
+                onClick={() => !isLiveSync && onToggleActuator(selectedCity.id, "trafficRedirect")}
+                className={`flex items-center justify-between p-3 rounded-lg border select-none transition-all duration-300 ${
+                  isLiveSync ? "pointer-events-none" : "cursor-pointer"
+                } ${
                   selectedCity.actuators.trafficRedirect
                     ? "border-indigo-500/50 bg-indigo-500/5 shadow-sm shadow-indigo-500/5"
                     : "border-border hover:bg-muted"
@@ -574,8 +596,10 @@ export default function OverviewTab({
 
               {/* Actuator 3: Industrial Cap */}
               <div 
-                onClick={() => onToggleActuator(selectedCity.id, "industrialCap")}
-                className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer select-none transition-all duration-300 ${
+                onClick={() => !isLiveSync && onToggleActuator(selectedCity.id, "industrialCap")}
+                className={`flex items-center justify-between p-3 rounded-lg border select-none transition-all duration-300 ${
+                  isLiveSync ? "pointer-events-none" : "cursor-pointer"
+                } ${
                   selectedCity.actuators.industrialCap
                     ? "border-rose-500/50 bg-rose-500/5 shadow-sm shadow-rose-500/5"
                     : "border-border hover:bg-muted"
@@ -603,8 +627,10 @@ export default function OverviewTab({
 
               {/* Actuator 4: Public Broadcast */}
               <div 
-                onClick={() => onToggleActuator(selectedCity.id, "publicBroadcast")}
-                className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer select-none transition-all duration-300 ${
+                onClick={() => !isLiveSync && onToggleActuator(selectedCity.id, "publicBroadcast")}
+                className={`flex items-center justify-between p-3 rounded-lg border select-none transition-all duration-300 ${
+                  isLiveSync ? "pointer-events-none" : "cursor-pointer"
+                } ${
                   selectedCity.actuators.publicBroadcast
                     ? "border-amber-500/50 bg-amber-500/5 shadow-sm shadow-amber-500/5"
                     : "border-border hover:bg-muted"
