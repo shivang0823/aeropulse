@@ -186,30 +186,18 @@ const initialAlerts: AlertLog[] = [
 ];
 
 async function fetchOpenAQData(cityId: string, locationId: number): Promise<Partial<CityTelemetry>> {
-  const apiKey = process.env.NEXT_PUBLIC_OPENAQ_API_KEY;
-  if (!apiKey) throw new Error("API Key missing");
-
-  // Step 1: Fetch location details to get sensor mapping
-  const locRes = await fetch(`https://api.openaq.org/v3/locations/${locationId}`, {
-    headers: { "X-API-Key": apiKey }
-  });
-  if (!locRes.ok) throw new Error(`Location fetch failed with status ${locRes.status}`);
-  const locData = await locRes.json();
-  const sensors = locData.results?.[0]?.sensors || [];
+  // Query our server-side API proxy to bypass browser CORS blockages
+  const res = await fetch(`/api/openaq?locationId=${locationId}`);
+  if (!res.ok) throw new Error(`Proxy fetch failed with status ${res.status}`);
+  const data = await res.json();
   
+  const sensors = data.location?.sensors || [];
   const sensorMap: Record<number, string> = {};
   sensors.forEach((s: any) => {
     sensorMap[s.id] = s.parameter?.name;
   });
 
-  // Step 2: Fetch latest measurements
-  const latestRes = await fetch(`https://api.openaq.org/v3/locations/${locationId}/latest`, {
-    headers: { "X-API-Key": apiKey }
-  });
-  if (!latestRes.ok) throw new Error(`Latest fetch failed with status ${latestRes.status}`);
-  const latestData = await latestRes.json();
-  const measurements = latestData.results || [];
-
+  const measurements = data.latest || [];
   const readings: Record<string, number> = {
     pm25: 60, pm10: 100, no2: 30, co: 1.0, so2: 10, temp: 28, humid: 60, windSpeed: 10
   };
