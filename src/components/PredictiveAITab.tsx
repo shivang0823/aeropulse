@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Brain, 
   Cpu, 
@@ -41,40 +41,78 @@ export default function PredictiveAITab() {
 
   const selectedCity = cities.find((c) => c.id === selectedCityId) || cities[0];
 
-  // Mathematical Projection Generator (Now to +180 mins)
-  const forecastData = [];
+  // Initialize with static calculation to prevent flash of empty chart
+  const initialForecast = [];
   const intervals = ["Now", "+30m", "+60m", "+90m", "+120m", "+150m", "+180m"];
-  
   for (let i = 0; i < intervals.length; i++) {
-    const timeFactor = i * 10; // natural accumulation over time without dispersion
-    
-    // Baseline Projection (No extra misting mitigation, keeping default variables)
-    const basePM = Math.max(20, Math.round(
-      selectedCity.base + timeFactor + 
-      (traffic - 65) * 0.6 + 
-      (industrial - 70) * 0.8 + 
-      stubble * 15
-    ));
-
-    // Optimized Forecast (Incorporates active misting frequency)
-    const optPM = Math.max(15, Math.round(
-      selectedCity.base + timeFactor * 0.4 + 
-      (traffic - 65) * 0.6 + 
-      (industrial - 70) * 0.8 + 
-      stubble * 15 - 
-      misting * 1.8
-    ));
-
-    forecastData.push({
+    const timeFactor = i * 10;
+    const basePM = Math.max(20, Math.round(selectedCity.base + timeFactor + (traffic - 65) * 0.6 + (industrial - 70) * 0.8 + stubble * 15));
+    const optPM = Math.max(15, Math.round(selectedCity.base + timeFactor * 0.4 + (traffic - 65) * 0.6 + (industrial - 70) * 0.8 + stubble * 15 - misting * 1.8));
+    initialForecast.push({
       time: intervals[i],
       "Baseline Projection (No Action)": basePM,
       "Optimized Forecast (With Mitigation)": optPM,
     });
   }
 
+  const [forecastData, setForecastData] = useState<any[]>(initialForecast);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    async function fetchForecast() {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            city: selectedCity,
+            traffic,
+            industrial,
+            misting,
+            stubble
+          })
+        });
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        if (active && Array.isArray(data) && data.length > 0) {
+          setForecastData(data);
+        }
+      } catch (err) {
+        console.error("API error, falling back to static calculation:", err);
+        const fallbackForecast = [];
+        for (let i = 0; i < intervals.length; i++) {
+          const timeFactor = i * 10;
+          const basePM = Math.max(20, Math.round(selectedCity.base + timeFactor + (traffic - 65) * 0.6 + (industrial - 70) * 0.8 + stubble * 15));
+          const optPM = Math.max(15, Math.round(selectedCity.base + timeFactor * 0.4 + (traffic - 65) * 0.6 + (industrial - 70) * 0.8 + stubble * 15 - misting * 1.8));
+          fallbackForecast.push({
+            time: intervals[i],
+            "Baseline Projection (No Action)": basePM,
+            "Optimized Forecast (With Mitigation)": optPM,
+          });
+        }
+        if (active) {
+          setForecastData(fallbackForecast);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    
+    const timeout = setTimeout(() => {
+      fetchForecast();
+    }, 400);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [selectedCityId, traffic, industrial, misting, stubble]);
+
   // Get final projected levels
-  const finalBaseline = forecastData[forecastData.length - 1]["Baseline Projection (No Action)"];
-  const finalOptimized = forecastData[forecastData.length - 1]["Optimized Forecast (With Mitigation)"];
+  const finalBaseline = forecastData.length > 0 ? (forecastData[forecastData.length - 1]["Baseline Projection (No Action)"] || 0) : 0;
+  const finalOptimized = forecastData.length > 0 ? (forecastData[forecastData.length - 1]["Optimized Forecast (With Mitigation)"] || 0) : 0;
   
   // Calculate AQI category for final optimized value
   const getSeverity = (pmValue: number) => {
@@ -248,9 +286,15 @@ export default function PredictiveAITab() {
                 </div>
               </div>
               
-              <span className="text-[9px] font-mono bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/10 px-2 py-0.5 rounded font-bold uppercase">
-                Neural Model Calibrated
-              </span>
+              {loading ? (
+                <span className="text-[9px] font-mono bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded font-bold uppercase animate-pulse">
+                  Gemini AI Projecting...
+                </span>
+              ) : (
+                <span className="text-[9px] font-mono bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/10 px-2 py-0.5 rounded font-bold uppercase">
+                  Neural Model Calibrated
+                </span>
+              )}
             </div>
 
             {/* Recharts Projections */}

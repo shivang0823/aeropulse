@@ -17,10 +17,9 @@ import ThemeToggle from "@/components/ThemeToggle";
 import OverviewTab from "@/components/OverviewTab";
 import PredictiveAITab from "@/components/PredictiveAITab";
 import RagCommandTab from "@/components/RagCommandTab";
-import PortfolioTab from "@/components/PortfolioTab";
 import { CityTelemetry, AlertLog } from "@/types/telemetry";
 
-type TabId = "overview" | "predictive" | "rag" | "portfolio";
+type TabId = "overview" | "predictive" | "rag";
 
 function generateInitialHistory(
   basePM25: number,
@@ -490,7 +489,6 @@ export default function Home() {
     { id: "overview", name: "Live Telemetry", icon: Activity, desc: "IoT Sensor Streams & Actuation" },
     { id: "predictive", name: "Predictive AI", icon: Brain, desc: "3-Hour Time-Series Forecasts" },
     { id: "rag", name: "RAG Command", icon: ShieldAlert, desc: "Legal Bylaws & Directive Generation" },
-    { id: "portfolio", name: "1M1B Portfolio", icon: Award, desc: "Innovation Journey & ESG Matrix" },
   ] as const;
 
   const renderActiveTab = () => {
@@ -528,8 +526,6 @@ export default function Home() {
             cities={cities}
           />
         );
-      case "portfolio":
-        return <PortfolioTab />;
     }
   };
 
@@ -581,7 +577,7 @@ export default function Home() {
             </div>
             <div className="min-w-0">
               <h2 className="text-sm font-bold truncate leading-tight">Shivang Srivastava</h2>
-              <p className="text-[10px] text-muted-foreground truncate">Innovator | Cohort 9U</p>
+              <p className="text-[10px] text-muted-foreground truncate">System Administrator</p>
             </div>
           </div>
         </div>
@@ -653,7 +649,7 @@ export default function Home() {
             </div>
             <div className="min-w-0">
               <h2 className="text-sm font-bold truncate leading-tight">Shivang Srivastava</h2>
-              <p className="text-[10px] text-muted-foreground truncate">1M1B Journey - Batch 2 UPN</p>
+              <p className="text-[10px] text-muted-foreground truncate">System Administrator</p>
             </div>
           </div>
         </div>

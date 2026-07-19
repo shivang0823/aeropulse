@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "AeroPulse UP | Air Quality Actuation Network",
-  description: "Predictive Air Quality Actuation Network dashboard for UP municipalities - 1M1B Innovation Journey portfolio by Shivang Srivastava.",
+  description: "Predictive Air Quality Actuation Network dashboard for UP municipalities.",
 };
 
 export default function RootLayout({

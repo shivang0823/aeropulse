@@ -70,6 +70,7 @@ export default function RagCommandTab({ onAddManualAlert, cities }: RagCommandTa
   const [generatedDirective, setGeneratedDirective] = useState<string>("");
   const [refNumber, setRefNumber] = useState<string>("");
   const [deployed, setDeployed] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const selectedCityObj = cities.find((c) => c.id === selectedCityId) || { name: "Lucknow" };
 
@@ -112,26 +113,70 @@ export default function RagCommandTab({ onAddManualAlert, cities }: RagCommandTa
   };
 
   // Generate Directive Text
-  const handleGenerateDirective = () => {
-    const selectedBylaw = bylawDatabase.find((b) => b.id === selectedBylawId) || bylawDatabase[1];
-    const cityInitials = selectedCityId.substring(0, 2).toUpperCase();
-    const randomRef = Math.floor(1000 + Math.random() * 9000);
-    const calculatedRef = `UP-SPCB-2026-${cityInitials}-${randomRef}`;
-    
-    const timestamp = new Date().toLocaleString();
-    
-    let violationDetail = "";
-    if (violationType === "Construction Dust") {
-      violationDetail = "uncontrolled construction dust emissions and failure to operate water atomization misting cannons.";
-    } else if (violationType === "Industrial Emissions") {
-      violationDetail = "industrial boiler particulate discharge exceeding CPCB-mandated standard thresholds.";
-    } else if (violationType === "Traffic Congestion") {
-      violationDetail = "excessive vehicular diesel soot concentration inside high-density residential wards.";
-    } else {
-      violationDetail = "agricultural crop residue (parali) open burning in adjacent rural buffer regions.";
-    }
+  const handleGenerateDirective = async () => {
+    setGenerating(true);
+    try {
+      let pollutant = "PM2.5";
+      let aqiValue = (selectedCityObj as any).pm25 || 150;
+      if (violationType === "Industrial Emissions") {
+        pollutant = "SO2";
+        aqiValue = (selectedCityObj as any).so2 || 25;
+      } else if (violationType === "Traffic Congestion") {
+        pollutant = "NO2";
+        aqiValue = (selectedCityObj as any).no2 || 45;
+      } else if (violationType === "Stubble Burning") {
+        pollutant = "PM10";
+        aqiValue = (selectedCityObj as any).pm10 || 250;
+      }
 
-    const orderText = `DIRECTIVE ORDER: ADMINISTRATIVE COMPLIANCE MANDATE
+      const res = await fetch("/api/rag-directive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetCity: selectedCityObj,
+          pollutantType: pollutant,
+          acuteValue: aqiValue,
+          violationType
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch directive");
+      const data = await res.json();
+      
+      setRefNumber(data.refNumber);
+      setGeneratedDirective(data.generatedDirective);
+      setDeployed(false);
+
+      // Dynamically select the RAG matched bylaw in the UI list if found
+      if (data.matchedBylaw && data.matchedBylaw.title) {
+        // Find if title contains string or add it to search results
+        const matchedId = data.matchedBylaw.title.toLowerCase().includes("1981") 
+          ? "bylaw-1" 
+          : data.matchedBylaw.title.toLowerCase().includes("lucknow")
+          ? "bylaw-2"
+          : data.matchedBylaw.title.toLowerCase().includes("grap")
+          ? "bylaw-3"
+          : "bylaw-4";
+        setSelectedBylawId(matchedId);
+      }
+    } catch (err) {
+      console.error("API error, falling back to static order template:", err);
+      const cityInitials = selectedCityId.substring(0, 2).toUpperCase();
+      const randomRef = Math.floor(1000 + Math.random() * 9000);
+      const calculatedRef = `UP-SPCB-2026-${cityInitials}-${randomRef}`;
+      const timestamp = new Date().toLocaleString();
+      let violationDetail = "";
+      if (violationType === "Construction Dust") {
+        violationDetail = "uncontrolled construction dust emissions and failure to operate water atomization misting cannons.";
+      } else if (violationType === "Industrial Emissions") {
+        violationDetail = "industrial boiler particulate discharge exceeding CPCB-mandated standard thresholds.";
+      } else if (violationType === "Traffic Congestion") {
+        violationDetail = "excessive vehicular diesel soot concentration inside high-density residential wards.";
+      } else {
+        violationDetail = "agricultural crop residue (parali) open burning in adjacent rural buffer regions.";
+      }
+
+      const orderText = `DIRECTIVE ORDER: ADMINISTRATIVE COMPLIANCE MANDATE
 REFERENCE NO: ${calculatedRef}
 DATE OF ISSUANCE: ${timestamp}
 ISSUING AUTHORITY: UP State Pollution Control Board
@@ -141,21 +186,18 @@ WHEREAS local IoT telemetry sensors on the AeroPulse Actuation Network have flag
 
 AND WHEREAS it has been determined that the primary source of airshed distress is attributed to: ${violationDetail}
 
-NOW, THEREFORE, IN EXERCISE of powers conferred under "${selectedBylaw.title}", the issuing authority hereby directs the Municipal Commissioner and Ward Wardens of ${selectedCityObj.name} to enforce:
-
-1. IMMEDIATE mitigation actuation protocols: activate mist cannons/smog towers continuously.
-2. Direct diversion of non-essential commercial cargo freighters away from urban zones.
-3. Apply a 30% electrical power load cap on manufacturing kilns/tanneries in the area.
-
-Failure to verify compliance within 60 minutes of this deployment will result in statutory closures and daily penalties of ₹50,000.
+NOW, THEREFORE, IN EXERCISE of powers conferred under "UP Air Pollution Control Act 1981 Section 21", the issuing authority hereby directs the Municipal Commissioner and Ward Wardens of ${selectedCityObj.name} to enforce corrective measures immediately.
 
 [SEAL OF COMMISSIONER]
 Digitally Signed by: Shivang Srivastava
-1M1B Social Innovator, Cohort 9U`;
+System Administrator`;
 
-    setRefNumber(calculatedRef);
-    setGeneratedDirective(orderText);
-    setDeployed(false);
+      setRefNumber(calculatedRef);
+      setGeneratedDirective(orderText);
+      setDeployed(false);
+    } finally {
+      setGenerating(false);
+    }
   };
 
   // Deploy Directive back to global Telemetry Alerts
@@ -325,10 +367,13 @@ Digitally Signed by: Shivang Srivastava
             {/* Generate Trigger */}
             <button
               onClick={handleGenerateDirective}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold font-mono flex items-center justify-center gap-2 transition-colors select-none"
+              disabled={generating}
+              className={`w-full py-2.5 text-white rounded-lg text-xs font-semibold font-mono flex items-center justify-center gap-2 transition-colors select-none ${
+                generating ? "bg-zinc-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              <Scale className="h-4 w-4" />
-              Compile & Preview Official Directive
+              <Scale className={`h-4 w-4 ${generating ? "animate-spin" : ""}`} />
+              {generating ? "Querying Regulatory RAG Matrix..." : "Compile & Preview Official Directive"}
             </button>
 
             {/* Directive Document Preview */}
