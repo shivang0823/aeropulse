@@ -530,121 +530,50 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
-      {/* Sidebar for Desktop */}
-      <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card text-card-foreground p-6 select-none shrink-0">
-        {/* Logo Section */}
-        <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 border border-blue-500/20">
-            <Wind className="h-6 w-6 animate-pulse" />
-          </div>
-          <div>
-            <h1 className="font-extrabold tracking-tight text-lg leading-tight">AeroPulse UP</h1>
-            <span className="text-xs text-muted-foreground font-mono">Actuation Network</span>
-          </div>
-        </div>
-
-        {/* Navigation Items */}
-        <nav className="flex-1 space-y-1.5">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group text-left ${
-                  isActive
-                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <Icon className={`h-5 w-5 shrink-0 ${isActive ? "text-white" : "text-muted-foreground group-hover:text-foreground"}`} />
-                <div>
-                  <div className="font-medium">{item.name}</div>
-                  <div className={`text-[10px] ${isActive ? "text-blue-100" : "text-muted-foreground"}`}>{item.desc}</div>
-                </div>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Innovator Metadata Portfolio Card */}
-        <div className="mt-auto border-t border-border pt-4 px-2">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-border">
-              <User className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-sm font-bold truncate leading-tight">Shivang Srivastava</h2>
-              <p className="text-[10px] text-muted-foreground truncate">System Administrator</p>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Mobile Drawer Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-300"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Mobile Sidebar */}
-      <aside 
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-card border-r border-border p-6 flex flex-col transform transition-transform duration-300 ease-in-out lg:hidden ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between mb-8 px-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 border border-blue-500/20">
-              <Wind className="h-6 w-6" />
+    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-300">
+      {/* Top Navigation Bar with Vertical Item Stack */}
+      <header className="w-full border-b border-border bg-card select-none">
+        <div className="max-w-[1600px] mx-auto p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* Logo Section */}
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20">
+              <Wind className="h-6 w-6 animate-pulse" />
             </div>
             <div>
-              <h1 className="font-extrabold tracking-tight text-lg leading-tight">AeroPulse UP</h1>
-              <span className="text-[10px] text-muted-foreground font-mono">Actuation Network</span>
+              <h1 className="font-extrabold tracking-tight text-xl leading-tight">AeroPulse UP</h1>
+              <span className="text-[11px] text-muted-foreground font-mono uppercase tracking-wider">Actuation Network</span>
             </div>
           </div>
-          <button 
-            onClick={() => setSidebarOpen(false)}
-            className="p-1 rounded-md bg-muted hover:bg-accent hover:text-accent-foreground border border-border"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
 
-        <nav className="flex-1 space-y-1.5">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setSidebarOpen(false);
-                }}
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group text-left ${
-                  isActive
-                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                <div>
-                  <div className="font-medium">{item.name}</div>
-                  <div className={`text-[10px] ${isActive ? "text-blue-100" : "text-muted-foreground"}`}>{item.desc}</div>
-                </div>
-              </button>
-            );
-          })}
-        </nav>
+          {/* Navigation Items (Stacked Vertically) */}
+          <nav className="flex flex-col gap-1.5 w-full md:max-w-md">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-mono px-2">Navigation Deck</span>
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex items-center gap-3 w-full px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 group text-left border ${
+                    isActive
+                      ? "bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-500/20"
+                      : "text-muted-foreground border-transparent hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <Icon className={`h-4.5 w-4.5 shrink-0 ${isActive ? "text-white" : "text-muted-foreground group-hover:text-foreground"}`} />
+                  <div>
+                    <div className="font-bold leading-tight">{item.name}</div>
+                    <div className={`text-[9px] font-normal ${isActive ? "text-blue-100" : "text-muted-foreground"}`}>{item.desc}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </nav>
 
-        <div className="mt-auto border-t border-border pt-4 px-2">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-border">
+          {/* Admin Profile Info */}
+          <div className="flex items-center gap-3 border-t md:border-t-0 md:border-l border-border/60 pt-4 md:pt-0 md:pl-6">
+            <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center border border-border">
               <User className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="min-w-0">
@@ -653,19 +582,13 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </aside>
+      </header>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header Row */}
         <header className="sticky top-0 z-30 h-16 border-b border-border bg-card/80 backdrop-blur-md px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 -ml-2 rounded-lg bg-muted/50 hover:bg-muted border border-border lg:hidden text-foreground transition-colors"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
             <div>
               <h2 className="text-lg font-bold capitalize leading-none tracking-tight">
                 {navigation.find(item => item.id === activeTab)?.name}

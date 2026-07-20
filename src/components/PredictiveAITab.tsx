@@ -80,7 +80,7 @@ export default function PredictiveAITab() {
           setForecastData(data);
         }
       } catch (err) {
-        console.error("API error, falling back to static calculation:", err);
+        console.warn("API error, falling back to static calculation:", err);
         const fallbackForecast = [];
         for (let i = 0; i < intervals.length; i++) {
           const timeFactor = i * 10;

@@ -160,7 +160,7 @@ export default function RagCommandTab({ onAddManualAlert, cities }: RagCommandTa
         setSelectedBylawId(matchedId);
       }
     } catch (err) {
-      console.error("API error, falling back to static order template:", err);
+      console.warn("API error, falling back to static order template:", err);
       const cityInitials = selectedCityId.substring(0, 2).toUpperCase();
       const randomRef = Math.floor(1000 + Math.random() * 9000);
       const calculatedRef = `UP-SPCB-2026-${cityInitials}-${randomRef}`;

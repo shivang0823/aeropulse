@@ -452,61 +452,140 @@ export default function OverviewTab({
 
           </div>
 
-          {/* Meteorological Summary Grid */}
-          <div className="bg-card border border-border rounded-xl p-4 md:p-5">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4 font-mono">
-              Live Meteorological Node Sensors
-            </h4>
-            <div className="grid grid-cols-3 gap-6">
-              {/* Temp */}
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-orange-500/5 border border-orange-500/10 text-orange-500">
-                  <Thermometer className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground leading-none">Temperature</div>
-                  <div className="text-sm font-extrabold text-foreground mt-0.5">{selectedCity.temp}°C</div>
-                </div>
-              </div>
 
-              {/* Humidity */}
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/5 border border-blue-500/10 text-blue-500">
-                  <Droplets className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground leading-none">Humidity</div>
-                  <div className="text-sm font-extrabold text-foreground mt-0.5">{selectedCity.humid}%</div>
-                </div>
+          {/* IoT Control Panel Section */}
+          <div className="bg-card border border-border rounded-xl p-5 md:p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/60 pb-4 mb-5">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider font-mono">
+                  IoT Control Panel
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Deploy emergency mitigation actuators and environmental controls for {selectedCity.name}.
+                </p>
               </div>
+            </div>
 
-              {/* Wind Speed / Dir */}
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10 text-emerald-500">
-                  <Wind className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground leading-none">Wind Velocity</div>
-                  <div className="text-sm font-extrabold text-foreground mt-0.5 flex items-center gap-1.5">
-                    <span>{selectedCity.windSpeed} km/h</span>
-                    <span 
-                      className="inline-block text-[10px] font-mono bg-emerald-500/10 text-emerald-500 px-1 rounded transform transition-transform"
-                      style={{ 
-                        display: "inline-block", 
-                        rotate: selectedCity.windDir === "N" ? "0deg" :
-                                selectedCity.windDir === "NE" ? "45deg" :
-                                selectedCity.windDir === "E" ? "90deg" :
-                                selectedCity.windDir === "SE" ? "135deg" :
-                                selectedCity.windDir === "S" ? "180deg" :
-                                selectedCity.windDir === "SW" ? "225deg" :
-                                selectedCity.windDir === "W" ? "270deg" : "315deg"
-                      }}
-                    >
-                      ↑
-                    </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Mist Cannons Actuator */}
+              <button
+                onClick={() => onToggleActuator(selectedCity.id, "mistCannons")}
+                className={`flex flex-col items-start p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer group ${
+                  selectedCity.actuators.mistCannons
+                    ? "border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+                    : "border-border bg-card/40 hover:border-border-hover hover:bg-card/70"
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-3">
+                  <div className={`p-2 rounded-lg ${
+                    selectedCity.actuators.mistCannons ? "bg-blue-500/20 text-blue-400" : "bg-muted text-muted-foreground"
+                  }`}>
+                    <Droplets className="h-5 w-5" />
                   </div>
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold font-mono transition-colors ${
+                    selectedCity.actuators.mistCannons
+                      ? "bg-blue-500/20 text-blue-400 animate-pulse"
+                      : "bg-muted text-muted-foreground"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${selectedCity.actuators.mistCannons ? "bg-blue-500" : "bg-muted-foreground"}`} />
+                    {selectedCity.actuators.mistCannons ? "ACTIVE" : "STANDBY"}
+                  </span>
                 </div>
-              </div>
+                <h4 className="font-bold text-sm text-foreground">Mist Cannons</h4>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Deploy localized liquid atomizers & smog towers to suppress particulates.
+                </p>
+              </button>
+
+              {/* Traffic Rerouting Actuator */}
+              <button
+                onClick={() => onToggleActuator(selectedCity.id, "trafficRedirect")}
+                className={`flex flex-col items-start p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer group ${
+                  selectedCity.actuators.trafficRedirect
+                    ? "border-amber-500 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+                    : "border-border bg-card/40 hover:border-border-hover hover:bg-card/70"
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-3">
+                  <div className={`p-2 rounded-lg ${
+                    selectedCity.actuators.trafficRedirect ? "bg-amber-500/20 text-amber-400" : "bg-muted text-muted-foreground"
+                  }`}>
+                    <Car className="h-5 w-5" />
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold font-mono transition-colors ${
+                    selectedCity.actuators.trafficRedirect
+                      ? "bg-amber-500/20 text-amber-400 animate-pulse"
+                      : "bg-muted text-muted-foreground"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${selectedCity.actuators.trafficRedirect ? "bg-amber-500" : "bg-muted-foreground"}`} />
+                    {selectedCity.actuators.trafficRedirect ? "ACTIVE" : "STANDBY"}
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-foreground">Traffic Rerouting</h4>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Activate traffic diversion bypasses around heavy pollution zones.
+                </p>
+              </button>
+
+              {/* Industrial Power Caps Actuator */}
+              <button
+                onClick={() => onToggleActuator(selectedCity.id, "industrialCap")}
+                className={`flex flex-col items-start p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer group ${
+                  selectedCity.actuators.industrialCap
+                    ? "border-rose-500 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.15)]"
+                    : "border-border bg-card/40 hover:border-border-hover hover:bg-card/70"
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-3">
+                  <div className={`p-2 rounded-lg ${
+                    selectedCity.actuators.industrialCap ? "bg-rose-500/20 text-rose-400" : "bg-muted text-muted-foreground"
+                  }`}>
+                    <Factory className="h-5 w-5" />
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold font-mono transition-colors ${
+                    selectedCity.actuators.industrialCap
+                      ? "bg-rose-500/20 text-rose-400 animate-pulse"
+                      : "bg-muted text-muted-foreground"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${selectedCity.actuators.industrialCap ? "bg-rose-500" : "bg-muted-foreground"}`} />
+                    {selectedCity.actuators.industrialCap ? "ACTIVE" : "STANDBY"}
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-foreground">Industrial Power Caps</h4>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Enforce strict clean-air manufacturing energy restrictions on local plants.
+                </p>
+              </button>
+
+              {/* Public Broadcast Systems Actuator */}
+              <button
+                onClick={() => onToggleActuator(selectedCity.id, "publicBroadcast")}
+                className={`flex flex-col items-start p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer group ${
+                  selectedCity.actuators.publicBroadcast
+                    ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                    : "border-border bg-card/40 hover:border-border-hover hover:bg-card/70"
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-3">
+                  <div className={`p-2 rounded-lg ${
+                    selectedCity.actuators.publicBroadcast ? "bg-emerald-500/20 text-emerald-400" : "bg-muted text-muted-foreground"
+                  }`}>
+                    <Radio className="h-5 w-5" />
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold font-mono transition-colors ${
+                    selectedCity.actuators.publicBroadcast
+                      ? "bg-emerald-500/20 text-emerald-400 animate-pulse"
+                      : "bg-muted text-muted-foreground"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${selectedCity.actuators.publicBroadcast ? "bg-emerald-500" : "bg-muted-foreground"}`} />
+                    {selectedCity.actuators.publicBroadcast ? "ACTIVE" : "STANDBY"}
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-foreground">Public Broadcast</h4>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Stream air quality warnings and health advisory notices to citizens.
+                </p>
+              </button>
             </div>
           </div>
         </section>
